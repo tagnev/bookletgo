@@ -18,9 +18,9 @@ cursor.execute('''
         Phone_Number TEXT,
         Referenced_By TEXT,
         Bike_Number TEXT,
-        Ride_Start_Time TEXT, -- Store time as text
+        Ride_Start_Time TEXT,
         Ride_Start_KM REAL,
-        Ride_End_Time TEXT, -- Store time as text
+        Ride_End_Time TEXT,
         Ride_Close_KM REAL,
         Total_Duration TEXT,
         Total_KM REAL,
@@ -36,6 +36,28 @@ conn.commit()
 
 # Streamlit app
 st.title("Ride Data Collection")
+
+# User authentication
+username = st.sidebar.text_input("Username", key="username")
+password = st.sidebar.text_input("Password", type="password", key="password")
+
+# Define a hardcoded username and password for demonstration purposes
+correct_username = st.secrets["DB_USERNAME"]
+correct_password = st.secrets["DB_PASSWORD"]
+
+# Check if the entered username and password are correct
+if st.sidebar.button("Login"):
+    if username == correct_username and password == correct_password:
+        st.sidebar.success("Logged in as {}".format(username))
+        st.session_state.logged_in = True
+    else:
+        st.sidebar.error("Incorrect username or password")
+        username = ""
+        password = ""
+
+# If the user is not logged in, don't show the input form and data
+if not st.session_state.get("logged_in"):
+    st.stop()
 
 # User input fields
 date = st.date_input("Date")
@@ -80,6 +102,13 @@ if st.button("Submit"):
 st.header("Current Ride Data")
 data = pd.read_sql('SELECT * FROM ride_data', conn)
 st.dataframe(data)
+
+# Logout button
+if st.button("Logout"):
+    st.session_state.logged_in = False
+    # Clear the login fields on logout
+    username = ""
+    password = ""
 
 # Close the database connection
 conn.close()
